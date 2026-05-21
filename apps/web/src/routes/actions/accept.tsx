@@ -47,8 +47,8 @@ export function MatchAccept() {
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Match accepted!</h1>
           <p className="text-gray-500 text-sm">
-            Thanks for confirming. The student has been notified and leadership
-            will follow up with next steps. Check your email for details.
+            Thanks for confirming. The student has been emailed your contact
+            information, and you should receive an email with theirs shortly.
           </p>
         </div>
       </div>

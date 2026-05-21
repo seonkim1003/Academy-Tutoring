@@ -30,6 +30,10 @@ export function RequestForm({ defaultValues, submitLabel, onSubmit, pending, err
     const setAvailability = (val) => setValue("availability", val, { shouldValidate: true });
     const levelOptions = subjectId ? getSubjectLevelOptions(subjectId) : [];
     const showLevel = levelOptions.length > 1;
+    // Whenever the subject changes, reconcile classLevel:
+    //  - if subject has a single level (or none selected yet), force "regular"
+    //  - if the previously chosen level is no longer valid for this subject,
+    //    fall back to the first available option.
     useEffect(() => {
         if (!subjectId)
             return;

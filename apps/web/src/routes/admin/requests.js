@@ -2,6 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { AdminTopBar } from "../../components/admin/AdminTopBar";
 import { SUBJECTS, CLASS_LEVEL_LABELS } from "@academy/shared";
 import { Button } from "../../components/ui/Button";
 import { api } from "../../lib/api";
@@ -69,7 +70,7 @@ export function AdminRequests() {
             .get(`/admin/requests?status=${statusFilter}`)
             .then((r) => (r.success ? r.data : [])),
     });
-    return (_jsxs("div", { className: "min-h-screen bg-gray-50", children: [_jsx("div", { className: "bg-white border-b border-gray-200", children: _jsxs("div", { className: "max-w-5xl mx-auto px-4 h-14 flex items-center gap-4", children: [_jsx(Link, { to: "/admin/dashboard", className: "text-sm text-gray-500 hover:text-gray-900", children: "\u2190 Dashboard" }), _jsx("span", { className: "font-semibold text-gray-900", children: "Requests" })] }) }), _jsxs("div", { className: "max-w-5xl mx-auto px-4 py-8", children: [_jsx("div", { className: "flex items-center gap-2 mb-6", children: ["pending", "matched", "all"].map((s) => (_jsx("button", { onClick: () => setStatusFilter(s === "all" ? "" : s), className: `rounded-full px-3 py-1 text-xs font-medium transition ${(s === "all" ? statusFilter === "" : statusFilter === s)
+    return (_jsxs("div", { className: "min-h-screen bg-gray-50", children: [_jsx(AdminTopBar, { title: "Requests" }), _jsxs("div", { className: "max-w-5xl mx-auto px-4 py-8", children: [_jsx("div", { className: "flex items-center gap-2 mb-6", children: ["pending", "matched", "all"].map((s) => (_jsx("button", { onClick: () => setStatusFilter(s === "all" ? "" : s), className: `rounded-full px-3 py-1 text-xs font-medium transition ${(s === "all" ? statusFilter === "" : statusFilter === s)
                                 ? "bg-blue-600 text-white"
                                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"}`, children: s.charAt(0).toUpperCase() + s.slice(1) }, s))) }), isLoading && _jsx("p", { className: "text-gray-400 text-sm", children: "Loading\u2026" }), data?.length === 0 && (_jsx("p", { className: "text-gray-500 text-sm", children: "No requests found." })), _jsx("div", { className: "flex flex-col gap-3", children: data?.map((req) => _jsx(RequestRow, { req: req }, req.id)) })] })] }));
 }

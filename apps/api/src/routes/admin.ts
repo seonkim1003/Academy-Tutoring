@@ -16,7 +16,7 @@ import {
 import { requireAdmin } from "../middleware/auth";
 import { rateLimit } from "../middleware/rateLimit";
 import { sendEmail, emailEnvTag } from "../lib/email";
-import { MatchConfirmationTutor, MatchConfirmationTutee } from "../emails/MatchConfirmation";
+import { MatchConfirmationTutor } from "../emails/MatchConfirmation";
 import { findMatchingSuggestions } from "../lib/matching";
 import { createToken } from "../lib/tokens";
 import {
@@ -323,51 +323,32 @@ admin.post(
         matchId: match.id,
         requestId: body.requestId,
         subjectName,
-        tutorName: tutorRow.name,
         tuteeName: tuteeRow.name,
         tutorUserId: tutorRow.userId,
-        tuteeUserId: tuteeRow.userId,
       }).catch((err) => console.error("Notification create failed:", err))
     );
 
-    // Send emails (fire-and-forget — don't block the response on email)
+    // Email tutor only — tutee is notified after tutor accepts
     c.executionCtx.waitUntil(
-      Promise.all([
-        sendEmail(
-          c.env.RESEND_API_KEY,
-          c.env.FROM_EMAIL,
-          c.env.ADMIN_NOTIFICATION_EMAIL,
-          {
-            to: tutorRow.email,
-            subject: `You've been matched for tutoring — ${subjectName}`,
-            template: MatchConfirmationTutor({
-              tutorName: tutorRow.name,
-              tuteeName: tuteeRow.name,
-              subject: subjectName,
-              acceptLink,
-              declineLink,
-              adminEmail: c.env.ADMIN_NOTIFICATION_EMAIL,
-            }),
-          },
-          emailEnvTag(c.env.WEB_URL)
-        ),
-        sendEmail(
-          c.env.RESEND_API_KEY,
-          c.env.FROM_EMAIL,
-          c.env.ADMIN_NOTIFICATION_EMAIL,
-          {
-            to: tuteeRow.email,
-            subject: `You've been matched with a tutor for ${subjectName}!`,
-            template: MatchConfirmationTutee({
-              tuteeName: tuteeRow.name,
-              tutorName: tutorRow.name,
-              subject: subjectName,
-              adminEmail: c.env.ADMIN_NOTIFICATION_EMAIL,
-            }),
-          },
-          emailEnvTag(c.env.WEB_URL)
-        ),
-      ]).catch((err) => console.error("Email send failed:", err))
+      sendEmail(
+        c.env.RESEND_API_KEY,
+        c.env.FROM_EMAIL,
+        c.env.ADMIN_NOTIFICATION_EMAIL,
+        {
+          to: tutorRow.email,
+          subject: `You've been matched for tutoring — ${subjectName}`,
+          template: MatchConfirmationTutor({
+            tutorName: tutorRow.name,
+            tuteeName: tuteeRow.name,
+            tuteeGradeLevel: tuteeRow.gradeLevel,
+            subject: subjectName,
+            acceptLink,
+            declineLink,
+            adminEmail: c.env.ADMIN_NOTIFICATION_EMAIL,
+          }),
+        },
+        emailEnvTag(c.env.WEB_URL)
+      ).catch((err) => console.error("Email send failed:", err))
     );
 
     // Audit
@@ -414,6 +395,8 @@ admin.post("/matches/:id/cancel", requireAdmin, async (c) => {
 
   const ctx = await getMatchNotificationContext(db, matchId);
   if (ctx) {
+    const tuteeUserId =
+      existing.status === "accepted" ? ctx.tuteeUserId : null;
     c.executionCtx.waitUntil(
       notifyMatchExpiredOrCancelled(db, {
         type: "match_cancelled",
@@ -421,7 +404,7 @@ admin.post("/matches/:id/cancel", requireAdmin, async (c) => {
         requestId: ctx.requestId,
         subjectName: ctx.subjectName,
         tutorUserId: ctx.tutorUserId,
-        tuteeUserId: ctx.tuteeUserId,
+        tuteeUserId,
       }).catch((err) => console.error("Notification create failed:", err))
     );
   }

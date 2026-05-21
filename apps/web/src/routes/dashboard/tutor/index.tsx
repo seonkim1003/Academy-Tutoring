@@ -18,6 +18,7 @@ type TutorData = {
     email: string;
     gradeLevel: number | null;
     bio: string | null;
+    phone: string | null;
     active: boolean;
   };
   subjects: { subjectId: string; maxLevel: ClassLevel }[];
@@ -148,6 +149,9 @@ function TutorDashboardInner() {
       <Section title="Profile">
         <p className="text-gray-900 font-medium">{data.tutor.name}</p>
         <p className="text-sm text-gray-500">{data.tutor.email}</p>
+        {data.tutor.phone && (
+          <p className="text-sm text-gray-500">{data.tutor.phone}</p>
+        )}
         {data.tutor.gradeLevel != null && (
           <p className="text-sm text-gray-500">Grade {data.tutor.gradeLevel}</p>
         )}

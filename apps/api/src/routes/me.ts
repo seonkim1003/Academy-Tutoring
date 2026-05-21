@@ -1,6 +1,7 @@
-import { Hono, type Context } from "hono";
+import { Hono } from "hono";
+import type { Context } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { eq, and, isNull, desc, inArray } from "drizzle-orm";
+import { eq, and, isNull, desc, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { tutorSignupSchema, tuteeRequestSchema, SUBJECTS } from "@academy/shared";
 import {
@@ -14,13 +15,15 @@ import {
 } from "../schema";
 import { requireUser } from "../middleware/userAuth";
 import {
-  getMatchNotificationContext,
   listUserNotifications,
   markAllNotificationsRead,
   markNotificationRead,
-  notifyMatchAccepted,
   notifyRequestSubmitted,
 } from "../lib/notifications";
+import {
+  handleMatchAccepted,
+  handleMatchDeclined,
+} from "../lib/matchActions";
 import type { HonoContext } from "../types";
 
 const me = new Hono<HonoContext>();
@@ -104,6 +107,7 @@ me.post(
           name: body.name,
           gradeLevel: body.gradeLevel,
           bio: body.bio,
+          phone: body.phone ?? null,
           userId: user.id,
         })
         .where(eq(tutors.id, tutorId));
@@ -119,6 +123,7 @@ me.post(
           email: user.email,
           gradeLevel: body.gradeLevel,
           bio: body.bio,
+          phone: body.phone ?? null,
           userId: user.id,
         })
         .returning({ id: tutors.id });
@@ -172,6 +177,7 @@ me.patch(
         name: body.name,
         gradeLevel: body.gradeLevel,
         bio: body.bio,
+        phone: body.phone ?? null,
       })
       .where(eq(tutors.id, tutor.id));
 
@@ -247,7 +253,15 @@ me.get("/tutee", async (c) => {
           })
           .from(matches)
           .leftJoin(tutors, eq(matches.tutorId, tutors.id))
-          .where(inArray(matches.requestId, requestIds))
+          .where(
+            and(
+              inArray(matches.requestId, requestIds),
+              or(
+                eq(matches.status, "accepted"),
+                eq(matches.status, "completed")
+              )
+            )
+          )
       : Promise.resolve([] as any[]),
   ]);
 
@@ -451,7 +465,7 @@ me.get("/matches", async (c) => {
 // ── POST /matches/:id/accept | /decline ───────────────────────────────────────
 
 async function respondToMatch(
-  c: Parameters<Parameters<typeof me.post>[1]>[0],
+  c: Context<HonoContext>,
   status: "accepted" | "declined"
 ) {
   const db = c.get("db");
@@ -481,24 +495,10 @@ async function respondToMatch(
     );
   }
 
-  await db
-    .update(matches)
-    .set({ status, respondedAt: Math.floor(Date.now() / 1000) })
-    .where(eq(matches.id, matchId));
-
   if (status === "accepted") {
-    const ctx = await getMatchNotificationContext(db, matchId);
-    if (ctx) {
-      c.executionCtx.waitUntil(
-        notifyMatchAccepted(db, {
-          matchId: ctx.matchId,
-          requestId: ctx.requestId,
-          subjectName: ctx.subjectName,
-          tutorName: ctx.tutorName,
-          tuteeUserId: ctx.tuteeUserId,
-        }).catch((err) => console.error("Notification create failed:", err))
-      );
-    }
+    await handleMatchAccepted(db, c.env, c.executionCtx, matchId);
+  } else {
+    await handleMatchDeclined(db, c.executionCtx, matchId);
   }
 
   return c.json({ success: true });

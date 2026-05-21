@@ -62,6 +62,7 @@ export const tutorSignupSchema = z.object({
   gradeLevel: z.coerce.number().refine((v): v is (typeof GRADE_LEVELS)[number] =>
     (GRADE_LEVELS as readonly number[]).includes(v), { message: "Invalid grade level" }),
   bio: z.string().max(500).optional(),
+  phone: z.string().trim().max(30).optional(),
   subjects: z
     .array(tutorSubject)
     .min(1, "Please select at least one subject you can tutor"),

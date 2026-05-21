@@ -13,6 +13,7 @@ type TutorData = {
     email: string;
     gradeLevel: number | null;
     bio: string | null;
+    phone: string | null;
   };
   subjects: { subjectId: string; maxLevel: ClassLevel }[];
   availability: {
@@ -65,6 +66,7 @@ function TutorEditInner() {
           email: data.tutor.email,
           gradeLevel: (data.tutor.gradeLevel ?? undefined) as TutorSignupInput["gradeLevel"],
           bio: data.tutor.bio ?? undefined,
+          phone: data.tutor.phone ?? undefined,
           subjects: data.subjects,
           availability: data.availability,
         }}

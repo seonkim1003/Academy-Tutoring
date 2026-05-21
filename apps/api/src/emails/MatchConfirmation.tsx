@@ -13,6 +13,7 @@ import * as React from "react";
 type Props = {
   tutorName: string;
   tuteeName: string;
+  tuteeGradeLevel?: number | null;
   subject: string;
   acceptLink: string;
   declineLink: string;
@@ -22,6 +23,7 @@ type Props = {
 export function MatchConfirmationTutor({
   tutorName,
   tuteeName,
+  tuteeGradeLevel,
   subject,
   acceptLink,
   declineLink,
@@ -36,8 +38,14 @@ export function MatchConfirmationTutor({
           <Text style={heading}>Academy Tutoring — New Match</Text>
           <Text style={text}>Hi {tutorName},</Text>
           <Text style={text}>
-            You've been matched to tutor <strong>{tuteeName}</strong> in{" "}
-            <strong>{subject}</strong>. Please accept or decline below.
+            You've been matched to tutor <strong>{tuteeName}</strong>
+            {tuteeGradeLevel != null && (
+              <>
+                {" "}
+                (Grade {tuteeGradeLevel})
+              </>
+            )}{" "}
+            in <strong>{subject}</strong>. Please accept or decline below.
           </Text>
           <Button href={acceptLink} style={acceptButton}>
             Accept

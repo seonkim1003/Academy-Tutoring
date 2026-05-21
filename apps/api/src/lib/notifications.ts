@@ -15,6 +15,7 @@ export type NotificationType =
   | "match_accepted"
   | "match_expired"
   | "match_cancelled"
+  | "match_declined"
   | "request_submitted";
 
 type NotificationPayload = {
@@ -76,42 +77,40 @@ export async function notifyMatchCreated(
     matchId: number;
     requestId: number;
     subjectName: string;
-    tutorName: string;
     tuteeName: string;
     tutorUserId: number | null;
-    tuteeUserId: number | null;
   }
 ) {
-  const { matchId, requestId, subjectName, tutorName, tuteeName, tutorUserId, tuteeUserId } =
-    params;
-  const meta = { matchId, requestId };
-  const tasks: Promise<void>[] = [];
+  const { matchId, requestId, subjectName, tuteeName, tutorUserId } = params;
+  if (!tutorUserId) return;
 
-  if (tutorUserId) {
-    tasks.push(
-      createUserNotification(db, {
-        userId: tutorUserId,
-        type: "match_created",
-        title: "New tutoring match",
-        body: `You've been matched with ${tuteeName} for ${subjectName}. Review and accept the match on your dashboard.`,
-        metadata: meta,
-        targetUrl: "/dashboard/tutor",
-      })
-    );
+  await createUserNotification(db, {
+    userId: tutorUserId,
+    type: "match_created",
+    title: "New tutoring match",
+    body: `You've been matched with ${tuteeName} for ${subjectName}. Review and accept the match on your dashboard.`,
+    metadata: { matchId, requestId },
+    targetUrl: "/dashboard/tutor",
+  });
+}
+
+export async function notifyMatchDeclined(
+  db: AppDb,
+  params: {
+    matchId: number;
+    requestId: number;
+    subjectName: string;
+    tutorName: string;
   }
-  if (tuteeUserId) {
-    tasks.push(
-      createUserNotification(db, {
-        userId: tuteeUserId,
-        type: "match_created",
-        title: "You've been matched!",
-        body: `You've been matched with ${tutorName} for ${subjectName}.`,
-        metadata: meta,
-        targetUrl: "/dashboard/tutee",
-      })
-    );
-  }
-  await Promise.all(tasks);
+) {
+  const { matchId, requestId, subjectName, tutorName } = params;
+  await notifyAllAdmins(db, {
+    type: "match_declined",
+    title: "Match declined",
+    body: `${tutorName} declined the match for ${subjectName}. The request has been reopened.`,
+    metadata: { matchId, requestId },
+    targetUrl: "/admin/requests",
+  });
 }
 
 export async function notifyMatchAccepted(

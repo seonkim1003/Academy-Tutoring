@@ -35,7 +35,7 @@ export async function handleFollowups(env: Env): Promise<void> {
           requestId: ctx.requestId,
           subjectName: ctx.subjectName,
           tutorUserId: ctx.tutorUserId,
-          tuteeUserId: ctx.tuteeUserId,
+          tuteeUserId: null,
         });
       } catch (err) {
         console.error(`Expired match notification failed for ${matchId}:`, err);

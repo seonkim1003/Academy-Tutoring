@@ -119,6 +119,15 @@ export function TutorProfileForm({
         {...register("email")}
       />
 
+      <Input
+        label="Phone (optional)"
+        type="tel"
+        placeholder="e.g. (555) 123-4567"
+        hint="Shared with your matched tutee so they can reach you."
+        error={errors.phone?.message}
+        {...register("phone")}
+      />
+
       <Select
         label="Your grade"
         required

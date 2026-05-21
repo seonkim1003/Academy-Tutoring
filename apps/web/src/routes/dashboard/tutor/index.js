@@ -5,6 +5,7 @@ import { SUBJECTS, CLASS_LEVEL_LABELS, DAYS_OF_WEEK, } from "@academy/shared";
 import { api } from "../../../lib/api";
 import { Button } from "../../../components/ui/Button";
 import { RequireUser } from "../../../components/auth/RequireUser";
+import { invalidateUserNotifications } from "../../../components/notifications/useNotifications";
 function formatTime(min) {
     const h = Math.floor(min / 60);
     const m = min % 60;
@@ -45,7 +46,10 @@ function TutorDashboardInner() {
     });
     const respond = useMutation({
         mutationFn: ({ id, action }) => api.post(`/me/matches/${id}/${action}`, {}),
-        onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "matches"] }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ["me", "matches"] });
+            invalidateUserNotifications(qc);
+        },
     });
     if (tutorQ.isLoading) {
         return (_jsx("div", { className: "min-h-screen flex items-center justify-center", children: _jsx("p", { className: "text-sm text-gray-400", children: "Loading\u2026" }) }));

@@ -1,5 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 const ERROR_MESSAGES = {
     missing_params: "Login was interrupted. Please try again.",
     invalid_state: "Your login link expired. Please try again.",
@@ -11,13 +13,23 @@ const ERROR_MESSAGES = {
 };
 export function LoginPage() {
     const [params] = useSearchParams();
+    const navigate = useNavigate();
+    const qc = useQueryClient();
     const next = params.get("next") ?? "/dashboard";
+    const token = params.get("token");
     const apiOrigin = import.meta.env.VITE_API_ORIGIN ?? "";
     const href = `${apiOrigin}/api/auth/google?next=${encodeURIComponent(next)}`;
     const error = params.get("error");
     const errorMsg = error
         ? ERROR_MESSAGES[error] ?? `Login failed: ${error}`
         : null;
+    useEffect(() => {
+        if (token) {
+            localStorage.setItem("user_session", token);
+            qc.clear();
+            navigate(next, { replace: true });
+        }
+    }, [token, next, navigate, qc]);
     return (_jsx("div", { className: "flex-1 bg-gray-50 flex items-center justify-center px-4 py-12", children: _jsxs("div", { className: "max-w-sm w-full bg-white rounded-xl border border-gray-200 p-8 text-center", children: [_jsx("h1", { className: "text-2xl font-bold text-gray-900 mb-2", children: "Welcome to Academy Tutoring" }), _jsx("p", { className: "text-sm text-gray-500 mb-6", children: "Sign in with your Google account to request a tutor or sign up to tutor." }), errorMsg && (_jsx("p", { className: "text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2 mb-4", children: errorMsg })), _jsxs("a", { href: href, className: "inline-flex items-center justify-center gap-3 w-full rounded-md border border-gray-300 bg-white py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition", children: [_jsx(GoogleIcon, {}), "Sign in with Google"] })] }) }));
 }
 function GoogleIcon() {
