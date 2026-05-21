@@ -246,6 +246,11 @@ const createMatchSchema = z.object({
   proposedDayOfWeek: z.number().int().min(0).max(6).optional(),
   proposedStartMinute: z.number().int().optional(),
   proposedEndMinute: z.number().int().optional(),
+  /**
+   * Force-match an unqualified tutor (skips subject / class-level checks).
+   * Recorded in the audit log so admins can spot overrides later.
+   */
+  override: z.boolean().optional(),
 });
 
 admin.post(
@@ -351,13 +356,16 @@ admin.post(
       ).catch((err) => console.error("Email send failed:", err))
     );
 
-    // Audit
     await db.insert(auditLog).values({
       adminId,
-      action: "create_match",
+      action: body.override ? "create_match_override" : "create_match",
       targetTable: "matches",
       targetId: match.id,
-      metadata: JSON.stringify({ ...body, tutorEmail: tutorRow.email, tuteeEmail: tuteeRow.email }),
+      metadata: JSON.stringify({
+        ...body,
+        tutorEmail: tutorRow.email,
+        tuteeEmail: tuteeRow.email,
+      }),
     });
 
     return c.json({ success: true, data: { matchId: match.id } }, 201);
