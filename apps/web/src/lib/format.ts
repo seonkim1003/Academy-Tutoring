@@ -1,10 +1,10 @@
 import { DAYS_OF_WEEK } from "@academy/shared";
 
 export function formatTime(min: number): string {
-  const h = Math.floor(min / 60);
+  const h24 = Math.floor(min / 60) % 24;
   const m = min % 60;
-  const ampm = h < 12 ? "AM" : "PM";
-  const dh = h > 12 ? h - 12 : h === 0 ? 12 : h;
+  const ampm = h24 < 12 ? "AM" : "PM";
+  const dh = h24 % 12 === 0 ? 12 : h24 % 12;
   return `${dh}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { clsx } from "clsx";
 import { DAYS_OF_WEEK, TIME_SLOTS } from "@academy/shared";
 import { Button } from "../ui/Button";
+import { formatTime } from "../../lib/format";
 
 type Slot = { dayOfWeek: number; startMinute: number; endMinute: number };
 
@@ -243,10 +244,3 @@ export function AvailabilityPicker({ value, onChange, error }: Props) {
   );
 }
 
-function formatTime(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  const ampm = h < 12 ? "AM" : "PM";
-  const dh = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${dh}:${m.toString().padStart(2, "0")} ${ampm}`;
-}

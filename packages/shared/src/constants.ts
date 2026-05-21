@@ -91,13 +91,14 @@ export const DAYS_OF_WEEK = [
   { value: 6, label: "Saturday" },
 ] as const;
 
-// Availability slots shown in the form — 30-minute increments, 7am–9pm
-export const TIME_SLOTS = Array.from({ length: 28 }, (_, i) => {
-  const totalMinutes = 420 + i * 30; // start at 7:00 AM (420 min)
-  const hours = Math.floor(totalMinutes / 60);
+// Availability slots shown in the form — 30-minute increments, 7:00 AM to 12:00 AM (midnight).
+// 1440 (midnight) is only ever picked as an *end* time; the form prevents selecting it as `from`.
+export const TIME_SLOTS = Array.from({ length: 35 }, (_, i) => {
+  const totalMinutes = 420 + i * 30; // 7:00 AM (420) … 12:00 AM (1440)
+  const hours24 = Math.floor(totalMinutes / 60) % 24;
   const minutes = totalMinutes % 60;
-  const ampm = hours < 12 ? "AM" : "PM";
-  const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+  const ampm = hours24 < 12 ? "AM" : "PM";
+  const displayHours = hours24 % 12 === 0 ? 12 : hours24 % 12;
   const label = `${displayHours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
   return { value: totalMinutes, label };
 });

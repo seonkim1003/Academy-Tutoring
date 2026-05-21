@@ -21,7 +21,7 @@ const gradePercent = z
 const availabilitySlot = z.object({
   dayOfWeek: z.number().int().min(0).max(6),
   startMinute: z.number().int().min(0).max(1439),
-  endMinute: z.number().int().min(0).max(1439),
+  endMinute: z.number().int().min(1).max(1440),
 });
 
 // ── Tutee request form ────────────────────────────────────────────────────────
