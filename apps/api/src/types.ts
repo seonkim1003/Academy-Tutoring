@@ -18,6 +18,8 @@ export type Env = {
   ADMIN_NOTIFICATION_EMAIL: string;
   WEB_URL: string;
   GOOGLE_CLIENT_ID: string;
+  /** When set (local dev + Vite proxy), OAuth callback uses this origin instead of req.url host */
+  API_PUBLIC_URL?: string;
 };
 
 export type AppDb = DrizzleD1Database<typeof schema>;

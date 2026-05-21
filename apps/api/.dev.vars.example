@@ -1,0 +1,12 @@
+# Copy to .dev.vars (gitignored). See docs/GOOGLE_OAUTH_SETUP.md
+
+RESEND_API_KEY=re_xxxxxxxx
+SESSION_COOKIE_SECRET=dev_secret_32_bytes_long_replace_me_ok
+
+# Google OAuth — required for sign-in testing
+GOOGLE_CLIENT_ID=YOUR_CLIENT_ID.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-YOUR_SECRET
+
+# Local SPA + Vite /api proxy (same-origin cookies)
+WEB_URL=http://localhost:5173
+API_PUBLIC_URL=http://localhost:5173

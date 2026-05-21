@@ -20,8 +20,10 @@ WEB_URL = "https://academy-tutoring.pages.dev"
 # Google OAuth client ID — public, safe to commit. Get from Google Cloud Console
 # → Credentials → OAuth 2.0 Web Client. Registered redirect URIs must include
 #   http://localhost:8787/api/auth/google/callback
+#   http://localhost:5173/api/auth/google/callback  (Vite proxy + API_PUBLIC_URL in .dev.vars)
 #   https://academy-tutoring-api.seonkim1003.workers.dev/api/auth/google/callback
 GOOGLE_CLIENT_ID = "REPLACE_ME.apps.googleusercontent.com"
+# Local only (.dev.vars): API_PUBLIC_URL=http://localhost:5173 WEB_URL=http://localhost:5173
 
 # Secrets (set via `wrangler secret put`):
 #   RESEND_API_KEY

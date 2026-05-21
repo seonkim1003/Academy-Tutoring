@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply academy-tutoring-db --local",
-    "db:migrate:prod": "wrangler d1 migrations apply academy-tutoring-db",
+    "db:migrate:prod": "wrangler d1 migrations apply academy-tutoring-db --remote",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

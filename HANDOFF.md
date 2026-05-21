@@ -57,6 +57,7 @@ These are set via `wrangler secret put` and never touch the codebase:
 |---|---|
 | `RESEND_API_KEY` | Resend API key for sending emails |
 | `SESSION_COOKIE_SECRET` | Random hex string for signing admin sessions |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (user sign-in) |
 
 To update a secret:
 ```bash

@@ -12,11 +12,18 @@ const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 const STATE_TTL_SECONDS = 600;
 const SESSION_COOKIE_NAME = "user_session";
 
-function cookieAttrs(maxAgeSeconds: number): string {
+function cookieAttrs(c: Context<HonoContext>, maxAgeSeconds: number): string {
+  const apiPublic = c.env.API_PUBLIC_URL?.replace(/\/$/, "");
+  // Proxied local dev: same-site cookie on the Vite origin (http://localhost:5173)
+  if (apiPublic?.startsWith("http://localhost")) {
+    return `HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAgeSeconds}`;
+  }
   return `HttpOnly; Secure; SameSite=None; Path=/; Max-Age=${maxAgeSeconds}`;
 }
 
 function redirectUri(c: Context<HonoContext>): string {
+  const apiPublic = c.env.API_PUBLIC_URL?.replace(/\/$/, "");
+  if (apiPublic) return `${apiPublic}/api/auth/google/callback`;
   const url = new URL(c.req.url);
   return `${url.protocol}//${url.host}/api/auth/google/callback`;
 }
@@ -182,7 +189,7 @@ auth.get("/google/callback", async (c) => {
   });
   c.header(
     "Set-Cookie",
-    `${SESSION_COOKIE_NAME}=${sessionToken}; ${cookieAttrs(SESSION_TTL_SECONDS)}`
+    `${SESSION_COOKIE_NAME}=${sessionToken}; ${cookieAttrs(c, SESSION_TTL_SECONDS)}`
   );
 
   // Decide redirect destination
@@ -214,7 +221,7 @@ auth.post("/logout", requireUser, async (c) => {
   const db = c.get("db");
   const userId = c.get("userId")!;
   await db.delete(userSessions).where(eq(userSessions.userId, userId));
-  c.header("Set-Cookie", `${SESSION_COOKIE_NAME}=; ${cookieAttrs(0)}`);
+  c.header("Set-Cookie", `${SESSION_COOKIE_NAME}=; ${cookieAttrs(c, 0)}`);
   return c.json({ success: true });
 });
 
