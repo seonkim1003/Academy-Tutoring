@@ -35,6 +35,7 @@ function TutorEditInner() {
                     email: data.tutor.email,
                     gradeLevel: (data.tutor.gradeLevel ?? undefined),
                     bio: data.tutor.bio ?? undefined,
+                    phone: data.tutor.phone ?? undefined,
                     subjects: data.subjects,
                     availability: data.availability,
                 }, submitLabel: "Save changes", pending: mutation.isPending, error: mutation.isError
