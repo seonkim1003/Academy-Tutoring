@@ -1,0 +1,33 @@
+name = "academy-tutoring-api"
+main = "src/index.ts"
+compatibility_date = "2024-05-24"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "academy-tutoring-db"
+database_id = "00000000-0000-0000-0000-000000000001"  # placeholder — replace with real ID before deploying
+
+[[kv_namespaces]]
+binding = "KV"
+id = "00000000000000000000000000000001"  # placeholder — replace with real ID before deploying
+
+[vars]
+SCHOOL_EMAIL_DOMAIN = "yourschool.org"
+FROM_EMAIL = "tutoring@yourdomain.org"
+ADMIN_NOTIFICATION_EMAIL = "leadership@yourschool.org"
+WEB_URL = "http://localhost:5173"
+
+# Secrets (set via `wrangler secret put`):
+#   RESEND_API_KEY
+#   SESSION_COOKIE_SECRET
+
+[triggers]
+crons = [
+  "0 13 * * *",  # Daily 1pm UTC — send next-day session reminders
+  "0 14 * * *"   # Daily 2pm UTC — follow up on stale matches
+]
+
+[dev]
+port = 8787
+local_protocol = "http"
