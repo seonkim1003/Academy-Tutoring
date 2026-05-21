@@ -18,13 +18,17 @@ type TutorSuggestion = {
   tutorName: string;
   tutorEmail: string;
   overlappingSlots: OverlapSlot[];
+  /** All of the tutor's availability — useful when there's no time overlap. */
+  tutorSlots: OverlapSlot[];
 };
 
 /**
- * Find active tutors who can cover the given subject+level and have at least
- * one availability window overlapping the request's availability.
+ * Find active tutors who can cover the given subject+level. Tutors with
+ * availability windows overlapping the request's availability come first
+ * (sorted by overlap count); tutors with no time overlap are still included
+ * at the bottom so admins can decide whether to reach out or propose a
+ * different time.
  *
- * Returns suggestions sorted by overlap count (most compatible first).
  * Used in the admin dashboard for manual matching (Phase 1).
  * Phase 3 will call this same function from the auto-matcher.
  */
@@ -107,19 +111,28 @@ export async function findMatchingSuggestions(
       }
     }
 
-    if (overlapping.length > 0) {
-      const tutor = tutorMap.get(tutorId)!;
-      suggestions.push({
-        tutorId,
-        tutorName: tutor.name,
-        tutorEmail: tutor.email,
-        overlappingSlots: overlapping,
-      });
-    }
+    const tutor = tutorMap.get(tutorId)!;
+    suggestions.push({
+      tutorId,
+      tutorName: tutor.name,
+      tutorEmail: tutor.email,
+      overlappingSlots: overlapping,
+      tutorSlots: tSlots.map((s) => ({
+        dayOfWeek: s.dayOfWeek,
+        startMinute: s.startMinute,
+        endMinute: s.endMinute,
+      })),
+    });
   }
 
-  // Sort by number of overlapping slots (most flexible tutor first)
-  suggestions.sort((a, b) => b.overlappingSlots.length - a.overlappingSlots.length);
+  // Sort by number of overlapping slots (most flexible tutor first); tutors
+  // with zero overlap fall to the bottom, then sorted alphabetically by name.
+  suggestions.sort((a, b) => {
+    if (b.overlappingSlots.length !== a.overlappingSlots.length) {
+      return b.overlappingSlots.length - a.overlappingSlots.length;
+    }
+    return a.tutorName.localeCompare(b.tutorName);
+  });
 
   return suggestions;
 }
