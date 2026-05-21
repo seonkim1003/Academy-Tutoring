@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  SUBJECTS,
-  CLASS_LEVEL_LABELS,
-  DAYS_OF_WEEK,
-  type ClassLevel,
-} from "@academy/shared";
+import { SUBJECTS, CLASS_LEVEL_LABELS, type ClassLevel } from "@academy/shared";
 import { api } from "../../../lib/api";
+import {
+  formatTime,
+  dayLabel,
+  MATCH_STATUS_COLORS,
+  statusChipClass,
+} from "../../../lib/format";
 import { Button } from "../../../components/ui/Button";
 import { RequireUser } from "../../../components/auth/RequireUser";
 import { invalidateUserNotifications } from "../../../components/notifications/useNotifications";
@@ -44,27 +45,6 @@ type Match = {
   needsDescription: string | null;
   tuteeName: string | null;
   tuteeEmail: string | null;
-};
-
-function formatTime(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  const ampm = h < 12 ? "AM" : "PM";
-  const dh = h > 12 ? h - 12 : h === 0 ? 12 : h;
-  return `${dh}:${m.toString().padStart(2, "0")} ${ampm}`;
-}
-
-function dayLabel(d: number): string {
-  return DAYS_OF_WEEK.find((x) => x.value === d)?.label ?? `Day ${d}`;
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  proposed: "bg-amber-50 text-amber-700 border-amber-200",
-  accepted: "bg-green-50 text-green-700 border-green-200",
-  declined: "bg-gray-100 text-gray-600 border-gray-200",
-  expired: "bg-gray-100 text-gray-500 border-gray-200",
-  cancelled: "bg-gray-100 text-gray-500 border-gray-200",
-  completed: "bg-blue-50 text-blue-700 border-blue-200",
 };
 
 function TutorDashboardInner() {
@@ -247,9 +227,10 @@ function TutorDashboardInner() {
                     )}
                   </div>
                   <span
-                    className={`text-xs font-medium border rounded-full px-2 py-0.5 ${
-                      STATUS_COLORS[m.status] ?? "bg-gray-100 text-gray-600 border-gray-200"
-                    }`}
+                    className={`text-xs font-medium border rounded-full px-2 py-0.5 ${statusChipClass(
+                      m.status,
+                      MATCH_STATUS_COLORS
+                    )}`}
                   >
                     {m.status}
                   </span>
