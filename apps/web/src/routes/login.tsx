@@ -22,7 +22,7 @@ export function LoginPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="flex-1 bg-gray-50 flex items-center justify-center px-4 py-12">
       <div className="max-w-sm w-full bg-white rounded-xl border border-gray-200 p-8 text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Welcome to Academy Tutoring
