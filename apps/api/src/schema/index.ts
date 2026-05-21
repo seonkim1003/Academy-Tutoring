@@ -259,6 +259,36 @@ export const userSessions = sqliteTable("user_sessions", {
   createdAt: integer("created_at").notNull().default(now()),
 });
 
+// ── In-app notifications ──────────────────────────────────────────────────────
+
+export const notifications = sqliteTable(
+  "notifications",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+    adminId: integer("admin_id").references(() => admins.id, { onDelete: "cascade" }),
+    type: text("type", {
+      enum: [
+        "match_created",
+        "match_accepted",
+        "match_expired",
+        "match_cancelled",
+        "request_submitted",
+      ],
+    }).notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    metadata: text("metadata"),
+    targetUrl: text("target_url").notNull(),
+    readAt: integer("read_at"),
+    createdAt: integer("created_at").notNull().default(now()),
+  },
+  (t) => [
+    index("idx_notifications_user").on(t.userId, t.readAt, t.createdAt),
+    index("idx_notifications_admin").on(t.adminId, t.readAt, t.createdAt),
+  ]
+);
+
 // ── Audit log ─────────────────────────────────────────────────────────────────
 
 export const auditLog = sqliteTable("audit_log", {

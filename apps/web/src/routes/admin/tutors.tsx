@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { api } from "../../lib/api";
+import { AdminTopBar } from "../../components/admin/AdminTopBar";
 
 type Tutor = {
   id: number;
@@ -30,14 +30,7 @@ export function AdminTutors() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
-          <Link to="/admin/dashboard" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Dashboard
-          </Link>
-          <span className="font-semibold text-gray-900">Tutors</span>
-        </div>
-      </div>
+      <AdminTopBar title="Tutors" />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {isLoading && <p className="text-gray-400 text-sm">Loading…</p>}

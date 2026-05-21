@@ -4,7 +4,14 @@ import { users, userSessions } from "../schema";
 import type { HonoContext } from "../types";
 
 export const requireUser = createMiddleware<HonoContext>(async (c, next) => {
-  const sessionToken = getCookie(c.req.raw, "user_session");
+  let sessionToken = getCookie(c.req.raw, "user_session");
+  if (!sessionToken) {
+    const authHeader = c.req.header("Authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      sessionToken = authHeader.substring(7).trim();
+    }
+  }
+
   if (!sessionToken) {
     return c.json({ success: false, error: "Unauthorized" }, 401);
   }

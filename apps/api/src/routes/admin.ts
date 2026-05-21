@@ -19,6 +19,14 @@ import { sendEmail, emailEnvTag } from "../lib/email";
 import { MatchConfirmationTutor, MatchConfirmationTutee } from "../emails/MatchConfirmation";
 import { findMatchingSuggestions } from "../lib/matching";
 import { createToken } from "../lib/tokens";
+import {
+  getMatchNotificationContext,
+  listAdminNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  notifyMatchCreated,
+  notifyMatchExpiredOrCancelled,
+} from "../lib/notifications";
 import type { HonoContext } from "../types";
 
 const admin = new Hono<HonoContext>();
@@ -309,6 +317,19 @@ admin.post(
     const acceptLink = `${c.env.WEB_URL}/actions/${acceptToken}/accept`;
     const declineLink = `${c.env.WEB_URL}/actions/${declineToken}/decline`;
 
+    // In-app notifications (fire-and-forget)
+    c.executionCtx.waitUntil(
+      notifyMatchCreated(db, {
+        matchId: match.id,
+        requestId: body.requestId,
+        subjectName,
+        tutorName: tutorRow.name,
+        tuteeName: tuteeRow.name,
+        tutorUserId: tutorRow.userId,
+        tuteeUserId: tuteeRow.userId,
+      }).catch((err) => console.error("Notification create failed:", err))
+    );
+
     // Send emails (fire-and-forget — don't block the response on email)
     c.executionCtx.waitUntil(
       Promise.all([
@@ -361,6 +382,91 @@ admin.post(
     return c.json({ success: true, data: { matchId: match.id } }, 201);
   }
 );
+
+admin.post("/matches/:id/cancel", requireAdmin, async (c) => {
+  const db = c.get("db");
+  const adminId = c.get("adminId")!;
+  const matchId = Number(c.req.param("id"));
+  if (!Number.isFinite(matchId)) {
+    return c.json({ success: false, error: "Invalid id" }, 400);
+  }
+
+  const [existing] = await db
+    .select({ id: matches.id, status: matches.status })
+    .from(matches)
+    .where(eq(matches.id, matchId))
+    .limit(1);
+
+  if (!existing) {
+    return c.json({ success: false, error: "Match not found" }, 404);
+  }
+  if (existing.status === "cancelled" || existing.status === "completed") {
+    return c.json(
+      { success: false, error: `Match is already ${existing.status}` },
+      409
+    );
+  }
+
+  await db
+    .update(matches)
+    .set({ status: "cancelled", respondedAt: Math.floor(Date.now() / 1000) })
+    .where(eq(matches.id, matchId));
+
+  const ctx = await getMatchNotificationContext(db, matchId);
+  if (ctx) {
+    c.executionCtx.waitUntil(
+      notifyMatchExpiredOrCancelled(db, {
+        type: "match_cancelled",
+        matchId: ctx.matchId,
+        requestId: ctx.requestId,
+        subjectName: ctx.subjectName,
+        tutorUserId: ctx.tutorUserId,
+        tuteeUserId: ctx.tuteeUserId,
+      }).catch((err) => console.error("Notification create failed:", err))
+    );
+  }
+
+  await db.insert(auditLog).values({
+    adminId,
+    action: "cancel_match",
+    targetTable: "matches",
+    targetId: matchId,
+  });
+
+  return c.json({ success: true });
+});
+
+// ── Notifications ───────────────────────────────────────────────────────────────
+
+admin.get("/notifications", requireAdmin, async (c) => {
+  const db = c.get("db");
+  const adminId = c.get("adminId")!;
+  const cursor = c.req.query("cursor");
+  const limit = c.req.query("limit")
+    ? Number(c.req.query("limit"))
+    : undefined;
+
+  const data = await listAdminNotifications(db, adminId, { cursor, limit });
+  return c.json({ success: true, data });
+});
+
+admin.post("/notifications/read-all", requireAdmin, async (c) => {
+  const db = c.get("db");
+  const adminId = c.get("adminId")!;
+  await markAllNotificationsRead(db, { adminId });
+  return c.json({ success: true });
+});
+
+admin.post("/notifications/:id/read", requireAdmin, async (c) => {
+  const db = c.get("db");
+  const adminId = c.get("adminId")!;
+  const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id)) {
+    return c.json({ success: false, error: "Invalid id" }, 400);
+  }
+  await markNotificationRead(db, id, { adminId });
+  return c.json({ success: true });
+});
 
 // ── Analytics (Phase 1 basics) ────────────────────────────────────────────────
 

@@ -13,6 +13,14 @@ import {
   matches,
 } from "../schema";
 import { requireUser } from "../middleware/userAuth";
+import {
+  getMatchNotificationContext,
+  listUserNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  notifyMatchAccepted,
+  notifyRequestSubmitted,
+} from "../lib/notifications";
 import type { HonoContext } from "../types";
 
 const me = new Hono<HonoContext>();
@@ -324,6 +332,16 @@ me.post(
       );
     }
 
+    const subjectName =
+      SUBJECTS.find((s) => s.id === body.subjectId)?.name ?? body.subjectId;
+    c.executionCtx.waitUntil(
+      notifyRequestSubmitted(db, {
+        requestId: newRequest.id,
+        tuteeName: tutee.name,
+        subjectName,
+      }).catch((err) => console.error("Notification create failed:", err))
+    );
+
     return c.json({ success: true, data: { requestId: newRequest.id } }, 201);
   }
 );
@@ -468,11 +486,58 @@ async function respondToMatch(
     .set({ status, respondedAt: Math.floor(Date.now() / 1000) })
     .where(eq(matches.id, matchId));
 
+  if (status === "accepted") {
+    const ctx = await getMatchNotificationContext(db, matchId);
+    if (ctx) {
+      c.executionCtx.waitUntil(
+        notifyMatchAccepted(db, {
+          matchId: ctx.matchId,
+          requestId: ctx.requestId,
+          subjectName: ctx.subjectName,
+          tutorName: ctx.tutorName,
+          tuteeUserId: ctx.tuteeUserId,
+        }).catch((err) => console.error("Notification create failed:", err))
+      );
+    }
+  }
+
   return c.json({ success: true });
 }
 
 me.post("/matches/:id/accept", (c) => respondToMatch(c, "accepted"));
 me.post("/matches/:id/decline", (c) => respondToMatch(c, "declined"));
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+me.get("/notifications", async (c) => {
+  const db = c.get("db");
+  const userId = c.get("userId")!;
+  const cursor = c.req.query("cursor");
+  const limit = c.req.query("limit")
+    ? Number(c.req.query("limit"))
+    : undefined;
+
+  const data = await listUserNotifications(db, userId, { cursor, limit });
+  return c.json({ success: true, data });
+});
+
+me.post("/notifications/read-all", async (c) => {
+  const db = c.get("db");
+  const userId = c.get("userId")!;
+  await markAllNotificationsRead(db, { userId });
+  return c.json({ success: true });
+});
+
+me.post("/notifications/:id/read", async (c) => {
+  const db = c.get("db");
+  const userId = c.get("userId")!;
+  const id = Number(c.req.param("id"));
+  if (!Number.isFinite(id)) {
+    return c.json({ success: false, error: "Invalid id" }, 400);
+  }
+  await markNotificationRead(db, id, { userId });
+  return c.json({ success: true });
+});
 
 // ── GET /claim-candidates — unclaimed rows matching user's email ──────────────
 

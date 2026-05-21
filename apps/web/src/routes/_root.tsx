@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import { useMe } from "../components/auth/useMe";
+import { NotificationBell } from "../components/notifications/NotificationBell";
 import { api } from "../lib/api";
 
 export function Root() {
@@ -12,6 +13,7 @@ export function Root() {
 
   const onLogout = async () => {
     await api.post("/auth/logout", {});
+    localStorage.removeItem("user_session");
     qc.clear();
     navigate("/", { replace: true });
   };
@@ -40,6 +42,7 @@ export function Root() {
                 >
                   Dashboard
                 </Link>
+                <NotificationBell variant="user" />
                 <div className="flex items-center gap-2">
                   {me.user.picture && (
                     <img

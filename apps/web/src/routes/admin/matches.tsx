@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
+import { AdminTopBar } from "../../components/admin/AdminTopBar";
+import { Button } from "../../components/ui/Button";
 
 type Match = {
   id: number;
@@ -34,22 +35,24 @@ const statusColor: Record<string, string> = {
 };
 
 export function AdminMatches() {
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "matches"],
     queryFn: () =>
       api.get<Match[]>("/admin/matches").then((r) => (r.success ? r.data : [])),
   });
 
+  const cancelMatch = useMutation({
+    mutationFn: (id: number) => api.post(`/admin/matches/${id}/cancel`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin", "matches"] });
+      qc.invalidateQueries({ queryKey: ["admin", "notifications"] });
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
-          <Link to="/admin/dashboard" className="text-sm text-gray-500 hover:text-gray-900">
-            ← Dashboard
-          </Link>
-          <span className="font-semibold text-gray-900">Matches</span>
-        </div>
-      </div>
+      <AdminTopBar title="Matches" />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         {isLoading && <p className="text-gray-400 text-sm">Loading…</p>}
@@ -81,6 +84,17 @@ export function AdminMatches() {
                     )}
                   </p>
                 </div>
+                {["proposed", "accepted"].includes(m.status) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={cancelMatch.isPending}
+                    onClick={() => cancelMatch.mutate(m.id)}
+                    className="text-red-600 hover:text-red-700 shrink-0"
+                  >
+                    Cancel
+                  </Button>
+                )}
               </div>
             </div>
           ))}

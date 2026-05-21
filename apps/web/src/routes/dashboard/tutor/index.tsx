@@ -9,6 +9,7 @@ import {
 import { api } from "../../../lib/api";
 import { Button } from "../../../components/ui/Button";
 import { RequireUser } from "../../../components/auth/RequireUser";
+import { invalidateUserNotifications } from "../../../components/notifications/useNotifications";
 
 type TutorData = {
   tutor: {
@@ -87,7 +88,10 @@ function TutorDashboardInner() {
   const respond = useMutation({
     mutationFn: ({ id, action }: { id: number; action: "accept" | "decline" }) =>
       api.post(`/me/matches/${id}/${action}`, {}),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["me", "matches"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["me", "matches"] });
+      invalidateUserNotifications(qc);
+    },
   });
 
   if (tutorQ.isLoading) {

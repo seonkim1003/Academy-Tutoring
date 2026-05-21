@@ -7,10 +7,19 @@ async function request<T>(
   path: string,
   options?: RequestInit
 ): Promise<ApiResponse<T>> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("user_session") : null;
+  const headers = new Headers(options?.headers);
+  if (!headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     credentials: "include",
     ...options,
+    headers,
   });
   return res.json() as Promise<ApiResponse<T>>;
 }

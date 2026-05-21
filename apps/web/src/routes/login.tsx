@@ -1,4 +1,6 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ERROR_MESSAGES: Record<string, string> = {
   missing_params: "Login was interrupted. Please try again.",
@@ -13,13 +15,24 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export function LoginPage() {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const next = params.get("next") ?? "/dashboard";
+  const token = params.get("token");
   const apiOrigin = (import.meta.env.VITE_API_ORIGIN as string | undefined) ?? "";
   const href = `${apiOrigin}/api/auth/google?next=${encodeURIComponent(next)}`;
   const error = params.get("error");
   const errorMsg = error
     ? ERROR_MESSAGES[error] ?? `Login failed: ${error}`
     : null;
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("user_session", token);
+      qc.clear();
+      navigate(next, { replace: true });
+    }
+  }, [token, next, navigate, qc]);
 
   return (
     <div className="flex-1 bg-gray-50 flex items-center justify-center px-4 py-12">

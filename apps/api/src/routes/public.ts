@@ -3,6 +3,10 @@ import { eq } from "drizzle-orm";
 import { SUBJECTS } from "@academy/shared";
 import { actionTokens, matches } from "../schema";
 import { consumeToken } from "../lib/tokens";
+import {
+  getMatchNotificationContext,
+  notifyMatchAccepted,
+} from "../lib/notifications";
 import type { HonoContext } from "../types";
 
 const pub = new Hono<HonoContext>();
@@ -52,6 +56,19 @@ pub.post("/actions/:token/match-accept", async (c) => {
     .update(matches)
     .set({ status: "accepted", respondedAt: Math.floor(Date.now() / 1000) })
     .where(eq(matches.id, row.targetId));
+
+  const ctx = await getMatchNotificationContext(db, row.targetId);
+  if (ctx) {
+    c.executionCtx.waitUntil(
+      notifyMatchAccepted(db, {
+        matchId: ctx.matchId,
+        requestId: ctx.requestId,
+        subjectName: ctx.subjectName,
+        tutorName: ctx.tutorName,
+        tuteeUserId: ctx.tuteeUserId,
+      }).catch((err) => console.error("Notification create failed:", err))
+    );
+  }
 
   return c.json({ success: true });
 });

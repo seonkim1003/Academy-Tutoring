@@ -212,7 +212,7 @@ auth.get("/google/callback", async (c) => {
       dest = "/onboarding/role";
     }
   }
-  return c.redirect(`${webUrl}${dest}`);
+  return c.redirect(`${webUrl}/login?token=${sessionToken}&next=${encodeURIComponent(dest)}`);
 });
 
 // ── POST /logout ──────────────────────────────────────────────────────────────
