@@ -15,10 +15,9 @@ import {
 } from "../schema";
 import { requireAdmin } from "../middleware/auth";
 import { rateLimit } from "../middleware/rateLimit";
-import { sendEmail } from "../lib/email";
+import { sendEmail, emailEnvTag } from "../lib/email";
 import { MatchConfirmationTutor, MatchConfirmationTutee } from "../emails/MatchConfirmation";
 import { findMatchingSuggestions } from "../lib/matching";
-import { sendEmail } from "../lib/email";
 import { createToken } from "../lib/tokens";
 import type { HonoContext } from "../types";
 
@@ -71,7 +70,8 @@ admin.post(
         to: email,
         subject: "Your Academy Tutoring admin login link",
         template: MagicLinkEmail({ adminName: adminRow.name, magicLink }),
-      }
+      },
+      emailEnvTag(c.env.WEB_URL)
     );
 
     return c.json({ success: true });
@@ -327,7 +327,8 @@ admin.post(
               declineLink,
               adminEmail: c.env.ADMIN_NOTIFICATION_EMAIL,
             }),
-          }
+          },
+          emailEnvTag(c.env.WEB_URL)
         ),
         sendEmail(
           c.env.RESEND_API_KEY,
@@ -342,7 +343,8 @@ admin.post(
               subject: subjectName,
               adminEmail: c.env.ADMIN_NOTIFICATION_EMAIL,
             }),
-          }
+          },
+          emailEnvTag(c.env.WEB_URL)
         ),
       ]).catch((err) => console.error("Email send failed:", err))
     );

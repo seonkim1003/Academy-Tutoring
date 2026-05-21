@@ -25,7 +25,7 @@ export function MatchConfirmationTutor({
   subject,
   acceptLink,
   declineLink,
-  adminEmail,
+  adminEmail: _adminEmail,
 }: Props) {
   return (
     <Html>
@@ -47,7 +47,8 @@ export function MatchConfirmationTutor({
           </Button>
           <Hr style={hr} />
           <Text style={footer}>
-            Questions? Reply to this email or contact {adminEmail}.
+            This is an automated message from AOSM Tutoring. Please contact
+            your program leadership with questions.
           </Text>
         </Container>
       </Body>
@@ -66,7 +67,7 @@ export function MatchConfirmationTutee({
   tuteeName,
   tutorName,
   subject,
-  adminEmail,
+  adminEmail: _adminEmail,
 }: TuteeProps) {
   return (
     <Html>
@@ -83,7 +84,8 @@ export function MatchConfirmationTutee({
           </Text>
           <Hr style={hr} />
           <Text style={footer}>
-            Questions? Reply to this email or contact {adminEmail}.
+            This is an automated message from AOSM Tutoring. Please contact
+            your program leadership with questions.
           </Text>
         </Container>
       </Body>

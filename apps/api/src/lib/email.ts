@@ -9,11 +9,16 @@ type SendOptions = {
   replyTo?: string;
 };
 
+export function emailEnvTag(webUrl: string): "dev" | "prod" {
+  return webUrl.includes("localhost") ? "dev" : "prod";
+}
+
 export async function sendEmail(
   apiKey: string,
   fromEmail: string,
   replyToDefault: string,
-  opts: SendOptions
+  opts: SendOptions,
+  envTag: "dev" | "prod" = "prod"
 ): Promise<void> {
   const resend = new Resend(apiKey);
   const html = await render(opts.template);
@@ -29,7 +34,7 @@ export async function sendEmail(
     },
     // Disable click/open tracking so localhost links aren't wrapped
     // by resend-clicks.com (which causes SSL errors in local dev)
-    tags: [{ name: "env", value: "dev" }],
+    tags: [{ name: "env", value: envTag }],
   });
 
   if (error) {

@@ -44,8 +44,8 @@ pnpm wrangler d1 execute academy-tutoring-db \
 | Web app | Cloudflare Pages → project: `academy-tutoring-web` |
 | API | Cloudflare Workers → worker: `academy-tutoring-api` |
 | Database | Cloudflare D1 → database: `academy-tutoring-db` |
-| Email | Resend dashboard → domain verified as `yourdomain.org` |
-| DNS | Cloudflare DNS for `yourdomain.org` |
+| Email | Resend dashboard → domain verified as `aosm-tutoring.org` (sender: `noreply@aosm-tutoring.org`) |
+| DNS | Cloudflare DNS for `aosm-tutoring.org` |
 
 ---
 
@@ -128,7 +128,7 @@ Edit `packages/shared/src/constants.ts` — the `SUBJECTS` array. Then:
 - [ ] Transfer all accounts to new leadership's shared email
 - [ ] Add new admin accounts, remove graduated ones
 - [ ] Renew domain if it's expiring (check Cloudflare Registrar)
-- [ ] Update `ADMIN_NOTIFICATION_EMAIL` in `wrangler.toml` to new leadership email
+- [ ] Confirm `FROM_EMAIL` / `ADMIN_NOTIFICATION_EMAIL` in `apps/api/wrangler.toml` still use `noreply@aosm-tutoring.org`
 - [ ] Brief the incoming leaders — have them log in and run a test match
 
 ---

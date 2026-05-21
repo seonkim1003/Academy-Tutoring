@@ -14,8 +14,8 @@ id = "4fa2aa81c978495cb266e0c8218f5116"
 
 [vars]
 SCHOOL_EMAIL_DOMAIN = "yourschool.org"
-FROM_EMAIL = "onboarding@resend.dev"
-ADMIN_NOTIFICATION_EMAIL = "seonkim1003@gmail.com"
+FROM_EMAIL = "noreply@aosm-tutoring.org"
+ADMIN_NOTIFICATION_EMAIL = "noreply@aosm-tutoring.org"
 WEB_URL = "https://aosm-tutoring.org"
 # Google OAuth client ID — public, safe to commit. Get from Google Cloud Console
 # → Credentials → OAuth 2.0 Web Client. Registered redirect URIs must include
