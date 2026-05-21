@@ -27,7 +27,7 @@ app.use(
       ];
       return allowed.includes(origin) ? origin : "";
     },
-    allowHeaders: ["Content-Type"],
+    allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
   })
