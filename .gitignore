@@ -8,3 +8,4 @@ dist/
 !.env.production
 .dev.vars
 .DS_Store
+backups/
