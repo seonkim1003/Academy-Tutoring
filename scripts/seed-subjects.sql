@@ -24,9 +24,15 @@ INSERT OR IGNORE INTO subjects (id, name, category) VALUES
   ('us-history',          'US History',                  'History'),
   ('ap-world',            'AP World History',            'History'),
   ('ap-us-history',       'AP US History',               'History'),
-  ('ap-gov',              'AP Government',               'History'),
   ('spanish',             'Spanish',                     'Language'),
   ('french',              'French',                      'Language'),
   ('mandarin',            'Mandarin',                    'Language'),
+  ('korean',              'Korean',                      'Language'),
   ('computer-science',    'Computer Science',            'Other'),
-  ('economics',           'Economics',                   'Other');
+  ('economics',           'Economics',                   'Other'),
+  -- Government lives under Other with an AP-or-not toggle. The legacy
+  -- 'ap-gov' id is reused so existing tutor_subjects rows stay valid.
+  ('ap-gov',              'Government',                  'Other');
+
+-- Reconcile rows seeded before Government moved to Other.
+UPDATE subjects SET category = 'Other', name = 'Government' WHERE id = 'ap-gov';

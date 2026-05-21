@@ -25,14 +25,16 @@ export const SUBJECTS = [
   { id: "us-history", name: "US History", category: "History" },
   { id: "ap-world", name: "AP World History", category: "History" },
   { id: "ap-us-history", name: "AP US History", category: "History" },
-  { id: "ap-gov", name: "AP Government", category: "History" },
   // Language
   { id: "spanish", name: "Spanish", category: "Language" },
   { id: "french", name: "French", category: "Language" },
   { id: "mandarin", name: "Mandarin", category: "Language" },
-  // Other
+  { id: "korean", name: "Korean", category: "Language" },
+  // Other (toggle: regular vs AP)
   { id: "computer-science", name: "Computer Science", category: "Other" },
   { id: "economics", name: "Economics", category: "Other" },
+  // "ap-gov" id is kept (legacy) but lives under Other with the AP toggle.
+  { id: "ap-gov", name: "Government", category: "Other" },
 ] as const;
 
 export const SUBJECT_IDS = SUBJECTS.map((s) => s.id) as [string, ...string[]];
@@ -45,6 +47,39 @@ export const CLASS_LEVEL_LABELS: Record<ClassLevel, string> = {
   honors: "Honors",
   ap: "AP / Advanced",
 };
+
+// English courses that should expose an "honors or not" toggle.
+// (AP Lang / AP Lit are inherently AP and don't get the toggle.)
+const ENGLISH_HONORS_TOGGLE_IDS = [
+  "english-9",
+  "english-10",
+  "english-11",
+  "english-12",
+] as const;
+
+/**
+ * Returns the class levels that should be selectable for a given subject.
+ *
+ *   - Science: full Regular / Honors / AP
+ *   - English 9–12: Regular / Honors (no AP — AP Lang & AP Lit are separate)
+ *   - Other (CS / Econ / Gov): Regular / AP
+ *   - All other subjects: no level choice (stored as "regular")
+ */
+export function getSubjectLevelOptions(subjectId: string): readonly ClassLevel[] {
+  const subject = SUBJECTS.find((s) => s.id === subjectId);
+  if (!subject) return ["regular"];
+
+  if (subject.category === "Science") return ["regular", "honors", "ap"];
+  if (subject.category === "Other") return ["regular", "ap"];
+  if ((ENGLISH_HONORS_TOGGLE_IDS as readonly string[]).includes(subject.id)) {
+    return ["regular", "honors"];
+  }
+  return ["regular"];
+}
+
+export function subjectHasLevelChoice(subjectId: string): boolean {
+  return getSubjectLevelOptions(subjectId).length > 1;
+}
 
 export const DAYS_OF_WEEK = [
   { value: 0, label: "Sunday" },

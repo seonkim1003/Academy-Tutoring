@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -5,8 +6,8 @@ import {
   type TuteeRequestInput,
   SUBJECTS,
   CLASS_LEVEL_LABELS,
-  CLASS_LEVELS,
   GRADE_LEVELS,
+  getSubjectLevelOptions,
 } from "@academy/shared";
 import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
@@ -17,11 +18,6 @@ import { AvailabilityPicker } from "./AvailabilityPicker";
 const subjectOptions = SUBJECTS.map((s) => ({
   value: s.id,
   label: `${s.name} (${s.category})`,
-}));
-
-const classLevelOptions = CLASS_LEVELS.map((l) => ({
-  value: l,
-  label: CLASS_LEVEL_LABELS[l],
 }));
 
 const gradeLevelOptions = GRADE_LEVELS.map((g) => ({
@@ -61,8 +57,31 @@ export function RequestForm({
   });
 
   const availability = watch("availability");
+  const subjectId = watch("subjectId");
+  const classLevel = watch("classLevel");
   const setAvailability = (val: TuteeRequestInput["availability"]) =>
     setValue("availability", val, { shouldValidate: true });
+
+  const levelOptions = subjectId ? getSubjectLevelOptions(subjectId) : [];
+  const showLevel = levelOptions.length > 1;
+
+  // Whenever the subject changes, reconcile classLevel:
+  //  - if subject has a single level (or none selected yet), force "regular"
+  //  - if the previously chosen level is no longer valid for this subject,
+  //    fall back to the first available option.
+  useEffect(() => {
+    if (!subjectId) return;
+    if (levelOptions.length <= 1) {
+      if (classLevel !== "regular") {
+        setValue("classLevel", "regular", { shouldValidate: true });
+      }
+      return;
+    }
+    if (!classLevel || !levelOptions.includes(classLevel)) {
+      setValue("classLevel", levelOptions[0], { shouldValidate: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
 
   return (
     <form
@@ -110,14 +129,19 @@ export function RequestForm({
         {...register("subjectId")}
       />
 
-      <Select
-        label="Class level"
-        required
-        placeholder="Select level"
-        options={classLevelOptions}
-        error={errors.classLevel?.message}
-        {...register("classLevel")}
-      />
+      {showLevel && (
+        <Select
+          label="Class level"
+          required
+          placeholder="Select level"
+          options={levelOptions.map((l) => ({
+            value: l,
+            label: CLASS_LEVEL_LABELS[l],
+          }))}
+          error={errors.classLevel?.message}
+          {...register("classLevel")}
+        />
+      )}
 
       <Input
         label="Current grade (%)"

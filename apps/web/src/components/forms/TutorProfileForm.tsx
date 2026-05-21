@@ -5,8 +5,8 @@ import {
   type TutorSignupInput,
   SUBJECTS,
   CLASS_LEVEL_LABELS,
-  CLASS_LEVELS,
   GRADE_LEVELS,
+  getSubjectLevelOptions,
 } from "@academy/shared";
 import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
@@ -152,6 +152,8 @@ export function TutorProfileForm({
                 const selected = selectedSubjects.find(
                   (sel) => sel.subjectId === s.id
                 );
+                const levelOptions = getSubjectLevelOptions(s.id);
+                const showLevel = selected && levelOptions.length > 1;
                 return (
                   <div key={s.id} className="flex items-center gap-2">
                     <button
@@ -165,9 +167,9 @@ export function TutorProfileForm({
                     >
                       {s.name}
                     </button>
-                    {selected && (
+                    {showLevel && (
                       <select
-                        value={selected.maxLevel}
+                        value={selected!.maxLevel}
                         onChange={(e) =>
                           setMaxLevel(
                             s.id,
@@ -177,7 +179,7 @@ export function TutorProfileForm({
                         }
                         className="rounded border border-gray-300 px-2 py-1 text-xs bg-white"
                       >
-                        {CLASS_LEVELS.map((l) => (
+                        {levelOptions.map((l) => (
                           <option key={l} value={l}>
                             up to {CLASS_LEVEL_LABELS[l]}
                           </option>
