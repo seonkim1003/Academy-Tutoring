@@ -57,8 +57,10 @@ function RoleInner() {
 }
 
 export function OnboardingRole() {
+  // Allow pending-claim users in too — they may have opted to skip the claim
+  // screen and create a new profile from scratch.
   return (
-    <RequireUser>
+    <RequireUser allowPendingClaim>
       <RoleInner />
     </RequireUser>
   );

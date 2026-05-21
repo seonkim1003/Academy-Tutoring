@@ -47,7 +47,7 @@ function OnboardingTutorInner() {
 
 export function OnboardingTutor() {
   return (
-    <RequireUser>
+    <RequireUser allowPendingClaim>
       <OnboardingTutorInner />
     </RequireUser>
   );

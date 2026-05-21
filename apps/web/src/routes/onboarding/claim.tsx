@@ -56,6 +56,13 @@ function ClaimInner() {
     },
   });
 
+  const startFresh = () => {
+    // User wants to ignore the existing records and start a brand new profile.
+    // We don't claim either candidate; the onboarding flow handles row reuse
+    // (and overwrites the orphan with the fresh data) on submit.
+    navigate("/onboarding/role");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -147,7 +154,14 @@ function ClaimInner() {
           )}
         </div>
 
-        <div className="mt-8 flex justify-end">
+        <div className="mt-8 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
+          <Button
+            variant="secondary"
+            onClick={startFresh}
+            disabled={mutation.isPending}
+          >
+            Create new profile
+          </Button>
           <Button
             onClick={submit}
             loading={mutation.isPending}
@@ -156,6 +170,9 @@ function ClaimInner() {
             Continue
           </Button>
         </div>
+        <p className="mt-3 text-xs text-gray-500 text-center sm:text-left">
+          None of these are you? Use <span className="font-medium">Create new profile</span> to start fresh.
+        </p>
       </div>
     </div>
   );

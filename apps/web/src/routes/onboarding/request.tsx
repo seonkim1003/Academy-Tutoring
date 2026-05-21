@@ -47,7 +47,7 @@ function OnboardingRequestInner() {
 
 export function OnboardingRequest() {
   return (
-    <RequireUser>
+    <RequireUser allowPendingClaim>
       <OnboardingRequestInner />
     </RequireUser>
   );

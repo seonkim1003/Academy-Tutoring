@@ -20,7 +20,11 @@ app.use(
     origin: (origin, c) => {
       const webUrl = (c.env as Env).WEB_URL;
       // Allow requests from the paired web app and local dev
-      const allowed = [webUrl, "http://localhost:5173"];
+      const allowed = [
+        webUrl,
+        "https://academy-tutoring.pages.dev",
+        "http://localhost:5173",
+      ];
       return allowed.includes(origin) ? origin : "";
     },
     allowHeaders: ["Content-Type"],

@@ -8,6 +8,8 @@
 | Redirect URI: `http://localhost:8787/api/auth/google/callback` | Required for direct wrangler dev |
 | Redirect URI: `http://localhost:5173/api/auth/google/callback` | Required when using Vite proxy (`API_PUBLIC_URL`) |
 | Redirect URI: `https://academy-tutoring-api.seonkim1003.workers.dev/api/auth/google/callback` | Required for production |
+| Authorized JavaScript origin: `https://aosm-tutoring.org` | Required for production (canonical site) |
+| Authorized JavaScript origin: `https://academy-tutoring.pages.dev` | Optional fallback URL |
 | `GOOGLE_CLIENT_ID` in `apps/api/wrangler.toml` | Must not be `REPLACE_ME` for prod |
 | `GOOGLE_CLIENT_SECRET` via `wrangler secret put` | Not yet set on Worker (see verification report) |
 | `GOOGLE_CLIENT_SECRET` in `apps/api/.dev.vars` | Required for local OAuth |
@@ -17,7 +19,8 @@
 1. Google Cloud Console → **APIs & Services** → **Credentials** → **Create credentials** → **OAuth client ID**.
 2. Application type: **Web application**.
 3. **Authorized redirect URIs** — add all three URIs listed above.
-4. Copy **Client ID** and **Client secret**.
+4. **Authorized JavaScript origins** — add `https://aosm-tutoring.org` and optionally `https://academy-tutoring.pages.dev`.
+5. Copy **Client ID** and **Client secret**.
 
 ## Wire locally
 

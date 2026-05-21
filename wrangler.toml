@@ -1,0 +1,4 @@
+# Cloudflare Pages — used by Git-connected builds and wrangler pages deploy
+name = "academy-tutoring"
+pages_build_output_dir = "apps/web/dist"
+compatibility_date = "2024-05-24"
