@@ -22,7 +22,7 @@ WEB_URL = "https://academy-tutoring.pages.dev"
 #   http://localhost:8787/api/auth/google/callback
 #   http://localhost:5173/api/auth/google/callback  (Vite proxy + API_PUBLIC_URL in .dev.vars)
 #   https://academy-tutoring-api.seonkim1003.workers.dev/api/auth/google/callback
-GOOGLE_CLIENT_ID = "REPLACE_ME.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "195876416902-c1i9k9ce47tauq5526u7phmkc69p8g6d.apps.googleusercontent.com"
 # Local only (.dev.vars): API_PUBLIC_URL=http://localhost:5173 WEB_URL=http://localhost:5173
 
 # Secrets (set via `wrangler secret put`):
