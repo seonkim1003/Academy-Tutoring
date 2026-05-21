@@ -1,8 +1,17 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { Root } from "./routes/_root";
 import { Landing } from "./routes/index";
-import { RequestForm } from "./routes/request";
-import { TutorSignup } from "./routes/tutor-signup";
+import { LoginPage } from "./routes/login";
+import { OnboardingRole } from "./routes/onboarding/role";
+import { OnboardingClaim } from "./routes/onboarding/claim";
+import { OnboardingTutor } from "./routes/onboarding/tutor";
+import { OnboardingRequest } from "./routes/onboarding/request";
+import { Dashboard } from "./routes/dashboard";
+import { TutorDashboard } from "./routes/dashboard/tutor";
+import { TutorEdit } from "./routes/dashboard/tutor/edit";
+import { TuteeDashboard } from "./routes/dashboard/tutee";
+import { TuteeNewRequest } from "./routes/dashboard/tutee/new";
+import { TuteeEdit } from "./routes/dashboard/tutee/edit";
 import { AdminLogin } from "./routes/admin/login";
 import { AdminVerify } from "./routes/admin/verify";
 import { AdminDashboard } from "./routes/admin/dashboard";
@@ -18,8 +27,25 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       { index: true, element: <Landing /> },
-      { path: "request", element: <RequestForm /> },
-      { path: "tutor-signup", element: <TutorSignup /> },
+      { path: "login", element: <LoginPage /> },
+
+      // Onboarding (auth-required via RequireUser inside each page)
+      { path: "onboarding/role", element: <OnboardingRole /> },
+      { path: "onboarding/claim", element: <OnboardingClaim /> },
+      { path: "onboarding/tutor", element: <OnboardingTutor /> },
+      { path: "onboarding/request", element: <OnboardingRequest /> },
+
+      // Dashboards (auth-required via RequireUser inside each page)
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard/tutor", element: <TutorDashboard /> },
+      { path: "dashboard/tutor/edit", element: <TutorEdit /> },
+      { path: "dashboard/tutee", element: <TuteeDashboard /> },
+      { path: "dashboard/tutee/new", element: <TuteeNewRequest /> },
+      { path: "dashboard/tutee/request/:id/edit", element: <TuteeEdit /> },
+
+      // Legacy URLs — redirect to the auth-gated onboarding flow
+      { path: "request", element: <Navigate to="/onboarding/request" replace /> },
+      { path: "tutor-signup", element: <Navigate to="/onboarding/tutor" replace /> },
     ],
   },
   {

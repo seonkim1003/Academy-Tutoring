@@ -1,6 +1,7 @@
 import type { ApiResponse } from "@academy/shared";
 
-const BASE = "/api";
+const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? "";
+const BASE = `${API_ORIGIN}/api`;
 
 async function request<T>(
   path: string,

@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { SUBJECTS } from "@academy/shared";
 import { Button } from "../../components/ui/Button";
 import { api } from "../../lib/api";
 
@@ -13,10 +12,6 @@ type Tutor = {
   active: boolean;
   createdAt: number;
 };
-
-function subjectName(id: string) {
-  return SUBJECTS.find((s) => s.id === id)?.name ?? id;
-}
 
 export function AdminTutors() {
   const qc = useQueryClient();

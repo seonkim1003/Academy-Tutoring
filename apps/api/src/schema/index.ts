@@ -28,6 +28,7 @@ export const tutees = sqliteTable(
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
     gradeLevel: integer("grade_level"),
+    userId: integer("user_id").references((): any => users.id, { onDelete: "set null" }),
     createdAt: integer("created_at").notNull().default(now()),
   },
   (t) => [index("idx_tutees_email").on(t.email)]
@@ -42,6 +43,7 @@ export const tutors = sqliteTable("tutors", {
   gradeLevel: integer("grade_level"),
   bio: text("bio"),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
+  userId: integer("user_id").references((): any => users.id, { onDelete: "set null" }),
   createdAt: integer("created_at").notNull().default(now()),
 });
 
@@ -228,6 +230,31 @@ export const adminSessions = sqliteTable("admin_sessions", {
   adminId: integer("admin_id")
     .notNull()
     .references(() => admins.id),
+  expiresAt: integer("expires_at").notNull(),
+  createdAt: integer("created_at").notNull().default(now()),
+});
+
+// ── End-user accounts (Google OAuth) ──────────────────────────────────────────
+
+export const users = sqliteTable(
+  "users",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    googleSub: text("google_sub").notNull().unique(),
+    email: text("email").notNull().unique(),
+    name: text("name").notNull(),
+    picture: text("picture"),
+    createdAt: integer("created_at").notNull().default(now()),
+    lastLoginAt: integer("last_login_at"),
+  },
+  (t) => [index("idx_users_email").on(t.email)]
+);
+
+export const userSessions = sqliteTable("user_sessions", {
+  token: text("token").primaryKey(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   expiresAt: integer("expires_at").notNull(),
   createdAt: integer("created_at").notNull().default(now()),
 });

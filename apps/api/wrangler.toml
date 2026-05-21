@@ -6,21 +6,28 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "academy-tutoring-db"
-database_id = "00000000-0000-0000-0000-000000000001"  # placeholder — replace with real ID before deploying
+database_id = "f187b836-b9a2-4d9c-9223-161baac16e30"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "00000000000000000000000000000001"  # placeholder — replace with real ID before deploying
+id = "4fa2aa81c978495cb266e0c8218f5116"
 
 [vars]
 SCHOOL_EMAIL_DOMAIN = "yourschool.org"
-FROM_EMAIL = "tutoring@yourdomain.org"
-ADMIN_NOTIFICATION_EMAIL = "leadership@yourschool.org"
-WEB_URL = "http://localhost:5173"
+FROM_EMAIL = "onboarding@resend.dev"
+ADMIN_NOTIFICATION_EMAIL = "seonkim1003@gmail.com"
+WEB_URL = "https://academy-tutoring.pages.dev"
+# Google OAuth client ID — public, safe to commit. Get from Google Cloud Console
+# → Credentials → OAuth 2.0 Web Client. Registered redirect URIs must include
+#   http://localhost:8787/api/auth/google/callback
+#   https://academy-tutoring-api.seonkim1003.workers.dev/api/auth/google/callback
+GOOGLE_CLIENT_ID = "REPLACE_ME.apps.googleusercontent.com"
 
 # Secrets (set via `wrangler secret put`):
 #   RESEND_API_KEY
 #   SESSION_COOKIE_SECRET
+#   GOOGLE_CLIENT_SECRET
+# For local dev: put GOOGLE_CLIENT_SECRET=... in apps/api/.dev.vars (gitignored).
 
 [triggers]
 crons = [

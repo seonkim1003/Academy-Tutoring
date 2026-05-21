@@ -112,7 +112,7 @@ admin.get("/verify", async (c) => {
 
   c.header(
     "Set-Cookie",
-    `admin_session=${sessionToken}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${7 * 24 * 60 * 60}`
+    `admin_session=${sessionToken}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=${7 * 24 * 60 * 60}`
   );
 
   return c.json({ success: true });
@@ -127,7 +127,7 @@ admin.post("/logout", requireAdmin, async (c) => {
 
   c.header(
     "Set-Cookie",
-    "admin_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0"
+    "admin_session=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0"
   );
   return c.json({ success: true });
 });

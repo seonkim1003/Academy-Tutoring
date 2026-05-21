@@ -1,20 +1,7 @@
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import { eq, and } from "drizzle-orm";
-import { tuteeRequestSchema, tutorSignupSchema } from "@academy/shared";
+import { eq } from "drizzle-orm";
 import { SUBJECTS } from "@academy/shared";
-import {
-  tutees,
-  tutors,
-  tutorSubjects,
-  tutorAvailability,
-  requests,
-  requestAvailability,
-  subjects,
-  actionTokens,
-  matches,
-} from "../schema";
-import { rateLimit } from "../middleware/rateLimit";
+import { actionTokens, matches } from "../schema";
 import { consumeToken } from "../lib/tokens";
 import type { HonoContext } from "../types";
 
@@ -25,128 +12,9 @@ pub.get("/subjects", (c) => {
   return c.json({ success: true, data: SUBJECTS });
 });
 
-// ── POST /requests — tutee submits a tutoring request ─────────────────────────
-pub.post(
-  "/requests",
-  rateLimit({ limit: 5, windowSeconds: 60 * 10 }), // 5 per 10 min per IP
-  zValidator("json", tuteeRequestSchema),
-  async (c) => {
-    const db = c.get("db");
-    const body = c.req.valid("json");
-
-    // Upsert tutee by email (returning student = same row)
-    const existing = await db
-      .select()
-      .from(tutees)
-      .where(eq(tutees.email, body.email))
-      .limit(1);
-
-    let tuteeId: number;
-    if (existing.length > 0) {
-      tuteeId = existing[0].id;
-      await db
-        .update(tutees)
-        .set({ name: body.name, gradeLevel: body.gradeLevel })
-        .where(eq(tutees.id, tuteeId));
-    } else {
-      const [inserted] = await db
-        .insert(tutees)
-        .values({
-          name: body.name,
-          email: body.email,
-          gradeLevel: body.gradeLevel,
-        })
-        .returning({ id: tutees.id });
-      tuteeId = inserted.id;
-    }
-
-    // Create the request
-    const [newRequest] = await db
-      .insert(requests)
-      .values({
-        tuteeId,
-        subjectId: body.subjectId,
-        classLevel: body.classLevel,
-        currentGradePct: body.currentGradePct,
-        needsDescription: body.needsDescription,
-      })
-      .returning({ id: requests.id });
-
-    // Insert availability slots
-    if (body.availability.length > 0) {
-      await db.insert(requestAvailability).values(
-        body.availability.map((slot) => ({
-          requestId: newRequest.id,
-          dayOfWeek: slot.dayOfWeek,
-          startMinute: slot.startMinute,
-          endMinute: slot.endMinute,
-        }))
-      );
-    }
-
-    return c.json({ success: true }, 201);
-  }
-);
-
-// ── POST /tutors — tutor signup ───────────────────────────────────────────────
-pub.post(
-  "/tutors",
-  rateLimit({ limit: 3, windowSeconds: 60 * 60 }), // 3 signups per hour per IP
-  zValidator("json", tutorSignupSchema),
-  async (c) => {
-    const db = c.get("db");
-    const body = c.req.valid("json");
-
-    // Check for existing tutor
-    const existing = await db
-      .select()
-      .from(tutors)
-      .where(eq(tutors.email, body.email))
-      .limit(1);
-
-    let tutorId: number;
-    if (existing.length > 0) {
-      tutorId = existing[0].id;
-      await db
-        .update(tutors)
-        .set({ name: body.name, gradeLevel: body.gradeLevel, bio: body.bio })
-        .where(eq(tutors.id, tutorId));
-      // Remove old subjects and availability to replace with new
-      await db.delete(tutorSubjects).where(eq(tutorSubjects.tutorId, tutorId));
-      await db.delete(tutorAvailability).where(eq(tutorAvailability.tutorId, tutorId));
-    } else {
-      const [inserted] = await db
-        .insert(tutors)
-        .values({
-          name: body.name,
-          email: body.email,
-          gradeLevel: body.gradeLevel,
-          bio: body.bio,
-        })
-        .returning({ id: tutors.id });
-      tutorId = inserted.id;
-    }
-
-    await db.insert(tutorSubjects).values(
-      body.subjects.map((s) => ({
-        tutorId,
-        subjectId: s.subjectId,
-        maxLevel: s.maxLevel,
-      }))
-    );
-
-    await db.insert(tutorAvailability).values(
-      body.availability.map((slot) => ({
-        tutorId,
-        dayOfWeek: slot.dayOfWeek,
-        startMinute: slot.startMinute,
-        endMinute: slot.endMinute,
-      }))
-    );
-
-    return c.json({ success: true }, 201);
-  }
-);
+// NOTE: anonymous POST /requests and POST /tutors have been removed.
+// Submissions now go through the authenticated /api/me/* routes after
+// Google sign-in. See apps/api/src/routes/me.ts.
 
 // ── GET /actions/:token — validate a token and return its purpose ─────────────
 pub.get("/actions/:token", async (c) => {

@@ -39,7 +39,7 @@ function subjectName(id: string) {
 
 function RequestRow({ req }: { req: Request }) {
   const [expanded, setExpanded] = useState(false);
-  const [matching, setMatching] = useState(false);
+  const [, setMatching] = useState(false);
   const qc = useQueryClient();
 
   const suggestionsQuery = useQuery({

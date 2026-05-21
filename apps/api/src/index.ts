@@ -4,6 +4,8 @@ import { logger } from "hono/logger";
 import { dbMiddleware } from "./middleware/db";
 import publicRoutes from "./routes/public";
 import adminRoutes from "./routes/admin";
+import authRoutes from "./routes/auth";
+import meRoutes from "./routes/me";
 import { handleReminders } from "./cron/reminders";
 import { handleFollowups } from "./cron/followups";
 import type { HonoContext, Env } from "./types";
@@ -33,6 +35,8 @@ app.use("/api/*", dbMiddleware);
 // Routes
 app.route("/api", publicRoutes);
 app.route("/api/admin", adminRoutes);
+app.route("/api/auth", authRoutes);
+app.route("/api/me", meRoutes);
 
 // Health check
 app.get("/", (c) => c.json({ ok: true, service: "academy-tutoring-api" }));
